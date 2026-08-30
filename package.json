@@ -1,0 +1,15 @@
+{
+  "name": "drei-sample",
+  "version": "1.0.0",
+  "description": "A full-stack sample \"location service\" application with a Java Spring Boot backend and a TypeScript React/Vite frontend that stores and queries geographic locations (coordinates, type, metadata).",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.3.0"
+  }
+}

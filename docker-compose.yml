@@ -1,0 +1,55 @@
+services:
+
+  # ── PostgreSQL + PostGIS ──────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: locationservice-postgres
+    environment:
+      POSTGRES_DB: locationdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-postgis.sql:/docker-entrypoint-initdb.d/01-init-postgis.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d locationdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Spring Boot Backend ───────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: locationservice-backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/locationdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  # ── React Frontend ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: locationservice-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
